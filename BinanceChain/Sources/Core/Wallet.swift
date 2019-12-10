@@ -4,55 +4,43 @@ import CryptoSwift
 
 public class Wallet: CustomStringConvertible {
 
-    public var endpoint: String = BinanceChain.Endpoint.testnet.rawValue
+    public let endpoint: String
     public var privateKey: Data { return self.key.raw }
     public var publicKey: Data { return self.key.publicKey.data }
-    public var mnemonic: String = ""
     public var sequence: Int = 0
     public var accountNumber: Int = 0
     public var chainId: String = ""
 
-    private var key: PrivateKey!
+    private let key: PrivateKey
 
     // MARK: - Constructors
     
-    public required init() {
-        self.initialise(mnemonic: Mnemonic.create())
+    public required init(key: PrivateKey, endpoint: String) {
+        self.endpoint = endpoint
+        self.key = key
     }
-
-    public convenience init(endpoint: BinanceChain.Endpoint = .testnet) {
-        self.init(mnemonic: Mnemonic.create(), endpoint: endpoint.rawValue)
+    
+    public convenience init?(privateKey: String, endpoint: String) {
+        guard let key = PrivateKey(pk: privateKey, coin: .bitcoin) else { return nil }
+        self.init(key: key, endpoint: endpoint)
     }
-
-    public convenience init(endpoint: String? = nil) {
-        self.init(mnemonic: Mnemonic.create(), endpoint: endpoint)
-    }
-
-    public convenience init(mnemonic: String, endpoint: BinanceChain.Endpoint) {
-        self.init(mnemonic: mnemonic, endpoint: endpoint.rawValue)
-    }
-
-    public convenience init(mnemonic: String, endpoint: String? = nil) {
-        self.init()
-        if let endpoint = endpoint { self.endpoint = endpoint }
-        self.initialise(mnemonic: mnemonic)
-    }
-
-    public convenience init(privateKey: String, endpoint: BinanceChain.Endpoint) {
+    
+    public convenience init?(privateKey: String, endpoint: BinanceChain.Endpoint = .testnet) {
         self.init(privateKey: privateKey, endpoint: endpoint.rawValue)
     }
-
-    public convenience init(privateKey: String, endpoint: String? = nil) {
-        self.init()
-        if let endpoint = endpoint { self.endpoint = endpoint }
-        self.key = PrivateKey(pk: privateKey, coin: .bitcoin)
-    }
-
-    private func initialise(mnemonic: String, completion: Completion? = nil) {
-        self.mnemonic = mnemonic
+    
+    public convenience init(mnemonic: String, endpoint: String) {
         let seed = Mnemonic.createSeed(mnemonic: mnemonic)
         let key = PrivateKey(seed: seed, coin: .bitcoin)
-        self.key = key.bip44PrivateKey
+        self.init(key: key.bip44PrivateKey, endpoint: endpoint)
+    }
+    
+    public convenience init(mnemonic: String, endpoint: BinanceChain.Endpoint = .testnet) {
+        self.init(mnemonic: mnemonic, endpoint: endpoint.rawValue)
+    }
+    
+    convenience init(endpoint: BinanceChain.Endpoint = .testnet) {
+        self.init(mnemonic: Mnemonic.create(), endpoint: endpoint.rawValue)
     }
 
     // MARK: - Wallet
@@ -156,8 +144,8 @@ public class Wallet: CustomStringConvertible {
     // MARK: - CustomStringConvertible
 
     public var description: String {
-        return String(format: "Wallet [address=%@ accountNumber=%d, sequence=%d, chain_id=%@, mnemonic=%@, account=%@, publicKey=%@, privateKey=%@, endpoint=%@]",
-                      address, accountNumber, sequence, chainId, mnemonic, account, publicKey.hexlify, privateKey.hexlify, endpoint)
+        return String(format: "Wallet [address=%@ accountNumber=%d, sequence=%d, chain_id=%@, account=%@, publicKey=%@, privateKey=%@, endpoint=%@]",
+                      address, accountNumber, sequence, chainId, account, publicKey.hexlify, privateKey.hexlify, endpoint)
     }
 
 }
