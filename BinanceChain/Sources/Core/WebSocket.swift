@@ -106,7 +106,7 @@ public class WebSocket {
 
     }
 
-    public func connect(endpoint: Endpoint = .testnet, completion: @escaping ()->()) {
+    public func connect(completion: @escaping ()->()) {
         self.connectCompleted = completion
         self.socket.connect()
     }

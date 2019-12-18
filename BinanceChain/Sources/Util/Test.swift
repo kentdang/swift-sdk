@@ -281,7 +281,7 @@ public class Test: WebSocketDelegate {
 
         let webSocket = WebSocket(delegate: self)
         self.webSocket = webSocket
-        webSocket.connect(endpoint: endpoint) {
+        webSocket.connect() {
 
             if (minimise) {
                 webSocket.subscribe(candlestick: [self.symbol], interval: .oneMinute)
